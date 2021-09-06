@@ -1,0 +1,34 @@
+from calibre.web.feeds.recipes import BasicNewsRecipe
+
+class Git_Pocket_Guide(BasicNewsRecipe):
+  title = 'rcore tutorial'.title()
+  description = ''
+  no_stylesheets = True
+  # <div itemprop="articleBody">
+  dic = dict(name="div", attrs={'itemprop': "articleBody"})
+  remove_tags_after = dic
+  remove_tags_before = dic
+  #  remove_tags = [dict(name='footer')]
+
+  def parse_index(self):
+      soup = self.index_to_soup('https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter0/index.html')
+      chapters = [] # 返回, 元素是(string,[字典])
+
+      for chapter in soup.find(name='div', attrs={ 'class': 'wy-menu'}).findAll(name='li', attrs={'class': 'toctree-l1'}):
+        chap_name = chapter.string
+
+        sections = [] # [字典]
+        tmp = 'index.html' if chapter.a['href'] == '#' else chapter.a['href']
+        chapter_index_url = 'https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter0/'+tmp
+        sub_soup = self.index_to_soup(chapter_index_url)
+        chapter_url_prefix = chapter_index_url.rsplit('index.html')[0]
+        try:
+            for section in sub_soup.find(name='div', attrs={ 'class': 'toctree-wrapper'}).findAll(name='li', attrs={'class': 'toctree-l1'}):
+                a = { 'title': section.a.string, 'url': chapter_url_prefix + section.a['href'], 'date':None, 'description':None, 'content':None }
+                sections.append(a)
+            chapters.append((chap_name, sections))
+        except:
+            #  import pdb;pdb.set_trace()
+            pass
+
+      return chapters

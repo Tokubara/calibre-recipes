@@ -1,0 +1,24 @@
+from calibre.web.feeds.recipes import BasicNewsRecipe
+
+class Git_Pocket_Guide(BasicNewsRecipe):
+    title = 'ics2019'
+    description = ''
+    url_prefix = 'https://nju-projectn.github.io/ics-pa-gitbook/ics2019/'
+    no_stylesheets = True
+    dic = dict(name="div", attrs={'class': "search-noresults"})
+    remove_tags_after = dic
+    remove_tags_before = dic
+    remove_tags = [dict(name='footer')]
+
+    def parse_index(self):
+        soup = self.index_to_soup(self.url_prefix + 'index.html')
+        articles = []
+
+        for link in soup.findAll(name='li', attrs={ 'class': 'chapter'}):
+            a = { 'title': link.a.string, 'url': self.url_prefix + link.a['href'], 'date':None, 'description':None, 'content':None }
+
+            articles.append(a)
+
+        ans = [('ics2019', articles)]
+
+        return ans
