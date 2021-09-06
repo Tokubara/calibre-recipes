@@ -1,22 +1,25 @@
+#!/usr/local/bin/python
 from calibre.web.feeds.recipes import BasicNewsRecipe
+import urlpath
 
 class Git_Pocket_Guide(BasicNewsRecipe):
-  title = 'rcore tutorial'.title()
+  title = 'rcore tutorial'.title() # 封面没有图片就会用这个字符串
   description = ''
-  no_stylesheets = True
-  # <div itemprop="articleBody">
+  no_stylesheets = True # 与css相关, 见到的例子总是True, 不知意思
+  #  cover_url = 'https://cmake.org/wp-content/uploads/2019/05/Cmake-logo-header.png' # 如果有图片, 设置这个, 可以是file:///本地文件
   dic = dict(name="div", attrs={'itemprop': "articleBody"})
-  remove_tags_after = dic
-  remove_tags_before = dic
+  remove_tags_after = dic # 字典或者list, 表示在这个tag以后的都不会要, 这样就可以保留主体信息
+  remove_tags_before = dic # 同上
   #  remove_tags = [dict(name='footer')]
 
   def parse_index(self):
-      soup = self.index_to_soup('https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter0/index.html')
+      # 此函数必须实现, 返回类型是, 一个列表, 每个列表元素代表一个章节, 每个章节是一个元组, 元组的成员是0. 本章标题字符串, 1. 一个列表, 元素是一个章的一个小节, 这个小节是一个字典
+      index_url = 'https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter0/index.html'
+      soup = self.index_to_soup(index_url) # index_to_soup是得到一个网页的beautifulsoup object
       chapters = [] # 返回, 元素是(string,[字典])
 
       for chapter in soup.find(name='div', attrs={ 'class': 'wy-menu'}).findAll(name='li', attrs={'class': 'toctree-l1'}):
         chap_name = chapter.string
-
         sections = [] # [字典]
         tmp = 'index.html' if chapter.a['href'] == '#' else chapter.a['href']
         chapter_index_url = 'https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter0/'+tmp

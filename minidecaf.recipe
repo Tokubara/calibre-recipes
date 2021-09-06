@@ -1,0 +1,41 @@
+from calibre.web.feeds.recipes import BasicNewsRecipe
+import re
+from collections import defaultdict
+
+class Git_Pocket_Guide(BasicNewsRecipe):
+# Rg '<li class="chapter' %
+    title = 'MiniDecaf'
+    description = ''
+    url_prefix = ''
+    no_stylesheets = True
+    dic = dict(name="div", attrs={'class': "body-inner"})
+    remove_tags_after = dic
+    remove_tags_before = dic
+    #  remove_tags = [dict(name='footer')]
+
+    def parse_index(self):
+        ret=[]
+        url_prefix = 'https://decaf-lang.github.io/minidecaf-tutorial/'
+        soup = self.index_to_soup(url_prefix)
+        chap_dict = defaultdict(list)
+        pat=re.compile(r'(step\d+)/')
+        name_dict = dict()
+
+        for link in soup.findAll('li',class_='chapter'):
+            link_url = link.attrs.get('data-path')
+            if link_url:
+                match_obj = pat.search(link_url)
+                link_key = match_obj.group(1) if match_obj else "preface"
+                chap_dict[link_key].append({ 'url': url_prefix + link_url, 'title': link.a.string.strip(), 'date':None, 'description':None, 'content':None })
+            else:
+                # step5：局部变量和赋值
+                chap_title=link.span.string.strip()
+                import pdb; pdb.set_trace()
+                match_obj = pat.search(chap_title)
+                if match_obj:
+                    name_dict[match_obj.group(1)] = chap_title
+                else:
+                    name_dict["preface"] = chap_title
+        for (key,value) in chap_dict.items():
+            ret.append((name_dict.get(key) if name_dict.get(key) else key, value))
+        return ret
