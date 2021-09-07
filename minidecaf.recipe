@@ -1,6 +1,7 @@
 from calibre.web.feeds.recipes import BasicNewsRecipe
 import re
 from collections import defaultdict
+import pdb
 
 class Git_Pocket_Guide(BasicNewsRecipe):
 # Rg '<li class="chapter' %
@@ -32,11 +33,13 @@ class Git_Pocket_Guide(BasicNewsRecipe):
                 # step5：局部变量和赋值
                 chap_title=link.span.string.strip().replace(" ", '').replace('：',':')
                 #  import pdb; pdb.set_trace()
-                match_obj = pat.search(chap_title)
-                if match_obj:
-                    name_dict[match_obj.group(1)] = chap_title
+                if chap_title.startswith("step"):
+                    name_dict[pat.match(chap_title).group(1)] = chap_title
+                #  match_obj = 
+                #  if match_obj:
                 else:
                     name_dict["appendix"] = chap_title
+        pdb.set_trace()
         for (key,value) in chap_dict.items():
             ret.append((name_dict.get(key) if name_dict.get(key) else key, value))
         return ret
